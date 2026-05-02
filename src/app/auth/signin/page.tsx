@@ -2,8 +2,8 @@
 
 import { signIn } from "next-auth/react";
 import { useState, Suspense } from "react";
-
 import { useSearchParams } from "next/navigation";
+import { BookOpen, Sparkles, Wand2, Mail, MailCheck, Leaf } from "lucide-react";
 
 function SignInForm() {
   const searchParams = useSearchParams();
@@ -38,67 +38,98 @@ function SignInForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl">
-        <h1 className="mb-6 text-center text-3xl font-bold text-slate-900">
-          Book Club Club
-        </h1>
+    <main className="min-h-screen bg-cream flex items-center justify-center p-6">
+      <div className="w-full max-w-sm space-y-8">
 
-        {submitted ? (
-          <div className="space-y-4 text-center">
-            <p className="text-lg font-semibold text-slate-900">
-              Check your email!
-            </p>
-            <p className="text-slate-600">
-              We&apos;ve sent a magic link to <strong>{email}</strong>
-            </p>
-            <p className="text-sm text-slate-500">
-              Click the link in your email to sign in. The link expires in 24 hours.
-            </p>
+        <div className="text-center space-y-3">
+          <div className="flex items-center justify-center gap-2">
+            <BookOpen className="text-blush" size={36} strokeWidth={1.5} />
+            <Sparkles className="text-sage" size={28} strokeWidth={1.5} />
           </div>
-        ) : (
-          <>
-            <p className="mb-8 text-center text-slate-600">
-              Sign in with your email
-            </p>
+          <h1 className="font-display text-4xl font-bold text-bark leading-tight">
+            Book Club Club
+          </h1>
+          <p className="text-bark-muted">
+            {submitted
+              ? "Check your inbox!"
+              : "We'll send a magic link to your email"}
+          </p>
+        </div>
 
-            {error && (
-              <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200">
-                {error}
-              </div>
-            )}
+        <div
+          className="bg-parchment rounded-3xl p-7 border border-lace"
+          style={{ boxShadow: "var(--shadow-warm-lg)" }}
+        >
+          {submitted ? (
+            <div className="text-center space-y-3 py-2">
+              <MailCheck className="mx-auto text-sage" size={40} strokeWidth={1.5} />
+              <p className="font-semibold text-bark text-lg">
+                Magic link sent!
+              </p>
+              <p className="text-bark-muted text-sm leading-relaxed">
+                We sent a link to{" "}
+                <span className="font-medium text-bark">{email}</span>.
+                Click it to sign in — it expires in 24 hours.
+              </p>
+              <button
+                onClick={() => { setSubmitted(false); setEmail(""); }}
+                className="mt-2 text-sm text-blush hover:text-blush-dark underline underline-offset-2 transition-colors cursor-pointer"
+              >
+                Use a different email
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="flex items-start gap-2 rounded-2xl bg-blush-light px-4 py-3 text-sm text-bark border border-blush/20">
+                  <Leaf className="text-blush shrink-0 mt-0.5" size={15} strokeWidth={2} />
+                  {error}
+                </div>
+              )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
+              <div className="space-y-1.5">
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-slate-700"
+                  className="block text-sm font-medium text-bark"
                 >
                   Email address
                 </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  required
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div className="relative">
+                  <Mail
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-bark-muted"
+                    size={16}
+                    strokeWidth={1.75}
+                  />
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    required
+                    className="w-full rounded-2xl border border-lace bg-cream pl-10 pr-4 py-3 text-bark placeholder:text-bark-muted/60 focus:border-blush focus:outline-none focus:ring-2 focus:ring-blush/20 transition-colors"
+                  />
+                </div>
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading || !email}
-                className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 rounded-full bg-blush px-6 py-3.5 font-semibold text-white transition-all duration-200 hover:bg-blush-dark hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 cursor-pointer"
+                style={{ boxShadow: "var(--shadow-warm)" }}
               >
-                {isLoading ? "Sending..." : "Send magic link"}
+                <Wand2 size={16} strokeWidth={2} />
+                {isLoading ? "Sending…" : "Send magic link"}
               </button>
             </form>
-          </>
-        )}
+          )}
+        </div>
+
+        <p className="text-center text-xs text-bark-muted">
+          No account needed — just your email
+        </p>
       </div>
-    </div>
+    </main>
   );
 }
 

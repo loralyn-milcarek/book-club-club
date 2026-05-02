@@ -1,22 +1,37 @@
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import { BookOpen, Sparkles, LogOut } from "lucide-react";
 
 export default async function Home() {
   const session = await auth();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-4">
-      <div className="w-full max-w-md space-y-8 text-center">
-        <div>
-          <h1 className="text-4xl font-bold text-white mb-2">Book Club Club</h1>
-          <p className="text-slate-300">A shared space for your book club</p>
+    <main className="min-h-screen bg-cream flex flex-col items-center justify-center p-6">
+      <div className="w-full max-w-sm space-y-8 text-center">
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-center gap-2">
+            <BookOpen className="text-blush" size={36} strokeWidth={1.5} />
+            <Sparkles className="text-sage" size={28} strokeWidth={1.5} />
+          </div>
+          <h1 className="font-display text-5xl font-bold text-bark leading-tight">
+            Book Club Club
+          </h1>
+          <p className="text-bark-muted text-lg">
+            A shared space for your book club
+          </p>
         </div>
 
         {session?.user ? (
-          <div className="space-y-6 bg-slate-800 rounded-lg p-6">
-            <div className="text-left">
-              <p className="text-slate-400 text-sm">Signed in as:</p>
-              <p className="text-white text-lg font-semibold">{session.user.email}</p>
+          <div
+            className="bg-parchment rounded-3xl p-6 border border-lace space-y-5"
+            style={{ boxShadow: "var(--shadow-warm)" }}
+          >
+            <div className="text-left space-y-0.5">
+              <p className="text-xs font-medium uppercase tracking-widest text-bark-muted">
+                Signed in as
+              </p>
+              <p className="font-semibold text-bark">{session.user.email}</p>
             </div>
             <form
               action={async () => {
@@ -26,19 +41,28 @@ export default async function Home() {
             >
               <button
                 type="submit"
-                className="w-full rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition hover:bg-red-700"
+                className="w-full flex items-center justify-center gap-2 rounded-full bg-blush px-6 py-3 font-semibold text-white transition-all duration-200 hover:bg-blush-dark hover:-translate-y-0.5 cursor-pointer"
+                style={{ boxShadow: "var(--shadow-warm)" }}
               >
+                <LogOut size={16} strokeWidth={2} />
                 Sign out
               </button>
             </form>
           </div>
         ) : (
-          <Link
-            href="/auth/signin"
-            className="inline-block rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
-          >
-            Sign in with magic link
-          </Link>
+          <div className="space-y-4">
+            <Link
+              href="/auth/signin"
+              className="inline-flex items-center gap-2 rounded-full bg-blush px-8 py-3.5 font-semibold text-white transition-all duration-200 hover:bg-blush-dark hover:-translate-y-0.5"
+              style={{ boxShadow: "var(--shadow-warm)" }}
+            >
+              <Sparkles size={16} strokeWidth={2} />
+              Sign in with magic link
+            </Link>
+            <p className="text-sm text-bark-muted">
+              No password needed
+            </p>
+          </div>
         )}
       </div>
     </main>
