@@ -2,6 +2,7 @@ import type { Book, Meeting, ReadingSession, User } from "@prisma/client";
 import { Calendar, Users, BookOpen, X } from "lucide-react";
 import ProgressBar from "./ProgressBar";
 import LogProgressForm from "./LogProgressForm";
+import CoverImage from "./CoverImage";
 import { setBookInactive } from "@/lib/actions";
 
 type BookWithMeeting = Book & { meeting: Meeting | null };
@@ -75,10 +76,10 @@ export default function BookCard({
     >
       <div className="flex gap-4">
         {book.coverUrl ? (
-          <img
+          <CoverImage
             src={book.coverUrl}
             alt={`Cover of ${book.title}`}
-            className="w-16 h-24 object-cover rounded-xl shrink-0 shadow-sm"
+            className="w-16 h-24 rounded-xl shrink-0 shadow-sm"
           />
         ) : (
           <div className="w-16 h-24 rounded-xl bg-lace flex items-center justify-center shrink-0">

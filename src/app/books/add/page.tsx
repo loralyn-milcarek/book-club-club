@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { addBook } from "@/lib/actions";
 import { BookOpen, Search, Loader2, ArrowLeft } from "lucide-react";
+import CoverImage from "@/components/CoverImage";
 import Link from "next/link";
 
 type OLDoc = {
@@ -86,10 +87,10 @@ export default function AddBookPage() {
           {selected ? (
             <div className="flex items-center gap-3 p-3 rounded-2xl bg-sage-light border border-sage/20">
               {selected.coverUrl && (
-                <img
+                <CoverImage
                   src={selected.coverUrl}
                   alt={selected.title}
-                  className="w-10 h-14 object-cover rounded-lg shrink-0"
+                  className="w-10 h-14 rounded-lg shrink-0"
                 />
               )}
               <div className="flex-1 min-w-0">
@@ -144,10 +145,11 @@ export default function AddBookPage() {
                       className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-lace/60 transition-colors border-b border-lace last:border-0 cursor-pointer"
                     >
                       {doc.cover_i ? (
-                        <img
+                        <CoverImage
                           src={`https://covers.openlibrary.org/b/id/${doc.cover_i}-S.jpg`}
                           alt=""
-                          className="w-8 h-11 object-cover rounded shrink-0"
+                          className="w-8 h-11 rounded shrink-0"
+                          iconSize={14}
                         />
                       ) : (
                         <div className="w-8 h-11 rounded bg-lace flex items-center justify-center shrink-0">
