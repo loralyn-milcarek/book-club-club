@@ -1,10 +1,11 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useState, Suspense } from "react";
+
 import { useSearchParams } from "next/navigation";
 
-export default function SignIn() {
+function SignInForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ export default function SignIn() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
@@ -21,6 +22,7 @@ export default function SignIn() {
       const result = await signIn("resend", {
         email,
         redirect: false,
+        callbackUrl,
       });
 
       if (result?.error) {
@@ -97,5 +99,13 @@ export default function SignIn() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense>
+      <SignInForm />
+    </Suspense>
   );
 }
