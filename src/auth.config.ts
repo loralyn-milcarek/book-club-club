@@ -1,5 +1,4 @@
 import type { NextAuthConfig } from "next-auth";
-import Resend from "next-auth/providers/resend";
 
 const allowedEmails = (process.env.ALLOWED_EMAILS ?? "")
   .split(",")
@@ -7,11 +6,7 @@ const allowedEmails = (process.env.ALLOWED_EMAILS ?? "")
   .filter(Boolean);
 
 export const authConfig = {
-  providers: [
-    Resend({
-      from: process.env.AUTH_RESEND_FROM_EMAIL,
-    }),
-  ],
+  providers: [],
   pages: {
     signIn: "/auth/signin",
     signOut: "/",
@@ -19,9 +14,6 @@ export const authConfig = {
   callbacks: {
     signIn({ user }) {
       const address = (user.email ?? "").toLowerCase();
-      // Block the magic link from being sent to non-members.
-      // On the verification click (no verificationRequest flag) we also check,
-      // so a tampered link from an unknown address is rejected at session creation.
       if (allowedEmails.length > 0 && !allowedEmails.includes(address)) {
         return false;
       }
@@ -33,6 +25,10 @@ export const authConfig = {
 
       if (isOnAuthPage) {
         return isLoggedIn ? Response.redirect(new URL("/", nextUrl)) : true;
+      }
+
+      if (!isLoggedIn) {
+        return Response.redirect(new URL("/auth/signin", nextUrl));
       }
 
       return true;
