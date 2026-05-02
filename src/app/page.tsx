@@ -68,8 +68,7 @@ export default async function Home() {
             <h1 className="font-display text-2xl font-bold text-bark">Book Club Club</h1>
           </div>
           <div className="flex items-center gap-2">
-            {activeBooks.length < 2 && (
-              <Link
+            <Link
                 href="/books/add"
                 className="flex items-center gap-1.5 rounded-full bg-sage px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-sage/80 hover:-translate-y-0.5"
                 style={{ boxShadow: "var(--shadow-warm)" }}
@@ -77,7 +76,6 @@ export default async function Home() {
                 <PlusCircle size={14} strokeWidth={2} />
                 Add book
               </Link>
-            )}
             <Link
               href="/settings"
               className="p-2 rounded-full text-bark-muted hover:text-bark hover:bg-lace transition-colors"

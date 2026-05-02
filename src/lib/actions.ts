@@ -54,10 +54,7 @@ export async function toggleProgressVisibility() {
 export async function addBook(formData: FormData) {
   await requireUser();
 
-  const activeCount = await prisma.book.count({ where: { isActive: true } });
-  if (activeCount >= 2) throw new Error("Maximum 2 active books at a time");
-
-  const title = formData.get("title") as string;
+const title = formData.get("title") as string;
   const author = (formData.get("author") as string) || null;
   const coverUrl = (formData.get("coverUrl") as string) || null;
   const openLibraryId = (formData.get("openLibraryId") as string) || null;
