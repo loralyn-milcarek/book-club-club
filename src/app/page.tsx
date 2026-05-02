@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { auth } from "@/auth";
+import { auth, signOut } from "@/auth";
 
 export default async function Home() {
   const session = await auth();
@@ -18,12 +18,19 @@ export default async function Home() {
               <p className="text-slate-400 text-sm">Signed in as:</p>
               <p className="text-white text-lg font-semibold">{session.user.email}</p>
             </div>
-            <Link
-              href="/api/auth/signout"
-              className="inline-block w-full rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition hover:bg-red-700"
+            <form
+              action={async () => {
+                "use server";
+                await signOut({ redirectTo: "/" });
+              }}
             >
-              Sign out
-            </Link>
+              <button
+                type="submit"
+                className="w-full rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition hover:bg-red-700"
+              >
+                Sign out
+              </button>
+            </form>
           </div>
         ) : (
           <Link
