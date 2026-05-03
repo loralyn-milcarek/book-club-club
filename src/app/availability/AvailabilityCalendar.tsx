@@ -12,10 +12,12 @@ export default function AvailabilityCalendar({
   myBlocks,
   blocksByDate,
   currentUserId,
+  meetingDates,
 }: {
   myBlocks: string[];
   blocksByDate: BlocksByDate;
   currentUserId: string;
+  meetingDates: Record<string, string>;
 }) {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
@@ -99,29 +101,39 @@ export default function AvailabilityCalendar({
           const key = dateKey(day);
           const isMyBlock = optimisticBlocks.has(key);
           const otherBlockers = (blocksByDate[key] ?? []).filter((b) => b.email !== currentUserId);
-          const totalBlocked = (blocksByDate[key] ?? []).length + (isMyBlock && !myBlocks.includes(key) ? 1 : 0);
           const isToday = key === todayKey;
+          const meetingTitle = meetingDates[key];
 
           return (
             <button
               key={day}
               onClick={() => handleToggle(day)}
-              title={
-                otherBlockers.length > 0
-                  ? `${otherBlockers.map((b) => b.name).join(", ")} unavailable`
-                  : undefined
-              }
               className={`
-                relative aspect-square rounded-xl text-sm font-medium transition-all
+                relative aspect-square rounded-xl text-sm font-medium transition-all overflow-hidden
                 ${isMyBlock
                   ? "bg-blush text-white"
                   : isToday
                   ? "ring-2 ring-blush text-bark hover:bg-lace"
+                  : meetingTitle
+                  ? "ring-2 ring-sage text-bark hover:bg-lace"
                   : "text-bark hover:bg-lace"
                 }
               `}
+              title={meetingTitle ? `📚 ${meetingTitle}${isMyBlock ? " · you're unavailable" : ""}` : isMyBlock ? "Click to mark as available" : otherBlockers.length > 0 ? `${otherBlockers.map((b) => b.name).join(", ")} unavailable` : "Click to mark as unavailable"}
             >
               {day}
+              {meetingTitle && (
+                <span className="absolute top-0.5 right-0.5 text-[8px] leading-none">📚</span>
+              )}
+              {isMyBlock && (
+                <svg
+                  className="absolute inset-0 w-full h-full pointer-events-none"
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                >
+                  <line x1="20" y1="80" x2="80" y2="20" stroke="rgba(255,255,255,0.6)" strokeWidth="5" strokeLinecap="round" />
+                </svg>
+              )}
               {otherBlockers.length > 0 && (
                 <span className="absolute bottom-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-sage" />
               )}
@@ -130,14 +142,22 @@ export default function AvailabilityCalendar({
         })}
       </div>
 
-      <div className="flex items-center gap-4 text-xs text-bark-muted pt-1 border-t border-lace">
+      <div className="flex flex-wrap items-center gap-4 text-xs text-bark-muted pt-1 border-t border-lace">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-blush" />
+          <div className="relative w-3 h-3 rounded-sm bg-blush overflow-hidden shrink-0">
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <line x1="20" y1="80" x2="80" y2="20" stroke="rgba(255,255,255,0.6)" strokeWidth="14" strokeLinecap="round" />
+            </svg>
+          </div>
           You&apos;re unavailable
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-sage" />
+          <div className="w-3 h-3 rounded-sm bg-sage shrink-0" />
           Others unavailable
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm ring-2 ring-sage shrink-0" />
+          Book club 📚
         </div>
       </div>
 

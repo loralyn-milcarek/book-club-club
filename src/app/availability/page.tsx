@@ -11,7 +11,7 @@ export default async function AvailabilityPage() {
 
   const userId = session.user.id;
 
-  const [allUsers, allBlocks] = await Promise.all([
+  const [allUsers, allBlocks, meetings] = await Promise.all([
     prisma.user.findMany({
       select: { id: true, name: true, email: true },
       orderBy: { name: "asc" },
@@ -19,7 +19,17 @@ export default async function AvailabilityPage() {
     prisma.memberAvailability.findMany({
       include: { user: { select: { id: true, name: true, email: true } } },
     }),
+    prisma.meeting.findMany({
+      where: { archivedAt: null },
+      select: { date: true, books: { select: { title: true } } },
+    }),
   ]);
+
+  const meetingDates: Record<string, string> = {};
+  for (const m of meetings) {
+    const key = m.date.toISOString().split("T")[0];
+    meetingDates[key] = m.books[0]?.title ?? "Book club";
+  }
 
   const myBlocks = allBlocks
     .filter((b) => b.userId === userId)
@@ -56,6 +66,7 @@ export default async function AvailabilityPage() {
           myBlocks={myBlocks}
           blocksByDate={blocksByDate}
           currentUserId={userId}
+          meetingDates={meetingDates}
         />
       </div>
     </main>
