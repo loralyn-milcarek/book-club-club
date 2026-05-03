@@ -1,11 +1,14 @@
 import type { Book, Meeting, ReadingSession, User } from "@prisma/client";
-import { Calendar, Users, BookOpen, X } from "lucide-react";
+import { Calendar, Users, BookOpen } from "lucide-react";
 import ProgressBar from "./ProgressBar";
 import LogProgressForm from "./LogProgressForm";
 import CoverImage from "./CoverImage";
-import { setBookInactive } from "@/lib/actions";
+import RemoveBookButton from "./RemoveBookButton";
 
-type BookWithMeeting = Book & { meeting: Meeting | null };
+type BookWithMeeting = Book & {
+  meeting: Meeting | null;
+  suggestedBy: Pick<User, "id" | "name" | "email"> | null;
+};
 type SessionWithUser = ReadingSession & {
   user: Pick<User, "id" | "name" | "email" | "progressPublic">;
 };
@@ -67,7 +70,6 @@ export default function BookCard({
     new Map(sessions.map((s) => [s.userId, s.user])).values()
   );
 
-  const removeAction = setBookInactive.bind(null, book.id);
 
   return (
     <div
@@ -116,17 +118,21 @@ export default function BookCard({
               </span>
             </div>
           )}
+          {book.suggestedBy && (
+            <p className="text-xs text-bark-muted">
+              Suggested by{" "}
+              <span className="font-medium text-bark">
+                {book.suggestedBy.id === currentUserId
+                  ? "you"
+                  : displayName(book.suggestedBy)}
+              </span>
+            </p>
+          )}
         </div>
 
-        <form action={removeAction} className="shrink-0">
-          <button
-            type="submit"
-            title="Mark as finished"
-            className="p-1.5 rounded-full text-bark-muted hover:text-bark hover:bg-lace transition-colors cursor-pointer"
-          >
-            <X size={14} strokeWidth={2} />
-          </button>
-        </form>
+        <div className="shrink-0">
+          <RemoveBookButton bookId={book.id} />
+        </div>
       </div>
 
       {allParticipants.length > 0 && (

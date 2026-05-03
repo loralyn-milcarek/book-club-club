@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { BookOpen, Sparkles, PlusCircle, Settings } from "lucide-react";
+import { BookOpen, Sparkles, PlusCircle, Settings, Calendar, CalendarDays, MapPin } from "lucide-react";
 import BookCard from "@/components/BookCard";
 
 export default async function Home() {
@@ -36,10 +36,15 @@ export default async function Home() {
 
   const currentUserId = session.user.id;
 
-  const [activeBooks, currentUser, allSessions] = await Promise.all([
+  const now = new Date();
+
+  const [activeBooks, currentUser, allSessions, nextMeeting] = await Promise.all([
     prisma.book.findMany({
       where: { isActive: true },
-      include: { meeting: true },
+      include: {
+        meeting: true,
+        suggestedBy: { select: { id: true, name: true, email: true } },
+      },
       orderBy: { createdAt: "asc" },
     }),
     prisma.user.findUnique({
@@ -47,13 +52,16 @@ export default async function Home() {
       select: { progressPublic: true },
     }),
     prisma.readingSession.findMany({
-      where: {
-        book: { isActive: true },
-      },
+      where: { book: { isActive: true } },
       orderBy: { loggedAt: "desc" },
       include: {
         user: { select: { id: true, name: true, email: true, progressPublic: true } },
       },
+    }),
+    prisma.meeting.findFirst({
+      where: { date: { gte: now }, archivedAt: null },
+      orderBy: { date: "asc" },
+      include: { books: { select: { id: true, title: true } } },
     }),
   ]);
 
@@ -69,13 +77,27 @@ export default async function Home() {
           </div>
           <div className="flex items-center gap-2">
             <Link
-                href="/books/add"
-                className="flex items-center gap-1.5 rounded-full bg-sage px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-sage/80 hover:-translate-y-0.5"
-                style={{ boxShadow: "var(--shadow-warm)" }}
-              >
-                <PlusCircle size={14} strokeWidth={2} />
-                Add book
-              </Link>
+              href="/books/add"
+              className="flex items-center gap-1.5 rounded-full bg-sage px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-sage/80 hover:-translate-y-0.5"
+              style={{ boxShadow: "var(--shadow-warm)" }}
+            >
+              <PlusCircle size={14} strokeWidth={2} />
+              Add book
+            </Link>
+            <Link
+              href="/meetings"
+              className="p-2 rounded-full text-bark-muted hover:text-bark hover:bg-lace transition-colors"
+              title="Meetings"
+            >
+              <CalendarDays size={18} strokeWidth={1.75} />
+            </Link>
+            <Link
+              href="/availability"
+              className="p-2 rounded-full text-bark-muted hover:text-bark hover:bg-lace transition-colors"
+              title="Availability"
+            >
+              <Calendar size={18} strokeWidth={1.75} />
+            </Link>
             <Link
               href="/settings"
               className="p-2 rounded-full text-bark-muted hover:text-bark hover:bg-lace transition-colors"
@@ -85,6 +107,35 @@ export default async function Home() {
             </Link>
           </div>
         </header>
+
+        {nextMeeting && (
+          <Link
+            href={`/meetings/${nextMeeting.id}`}
+            className="flex items-center gap-3 bg-blush-light rounded-2xl px-4 py-3 border border-blush/20 hover:border-blush/40 transition-all hover:-translate-y-0.5 group"
+            style={{ boxShadow: "var(--shadow-warm)" }}
+          >
+            <div className="shrink-0 w-10 h-10 rounded-xl bg-blush flex flex-col items-center justify-center text-white">
+              <span className="text-sm font-bold leading-none">
+                {nextMeeting.date.toLocaleDateString("en-US", { day: "numeric" })}
+              </span>
+              <span className="text-[9px] uppercase tracking-wide">
+                {nextMeeting.date.toLocaleDateString("en-US", { month: "short" })}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-bark">
+                Next meeting ·{" "}
+                {nextMeeting.date.toLocaleDateString("en-US", { weekday: "long" })}
+              </p>
+              {nextMeeting.books.length > 0 && (
+                <p className="text-xs text-bark-muted truncate">
+                  {nextMeeting.books.map((b) => b.title).join(", ")}
+                </p>
+              )}
+            </div>
+            <span className="text-xs text-blush font-medium group-hover:underline shrink-0">Details →</span>
+          </Link>
+        )}
 
         {activeBooks.length === 0 ? (
           <div

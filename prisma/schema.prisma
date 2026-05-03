@@ -20,11 +20,14 @@ model User {
   emailVerified   DateTime?
   image           String?
   progressPublic  Boolean          @default(true)
-  accounts        Account[]
-  sessions        Session[]
-  readingSessions ReadingSession[]
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  accounts          Account[]
+  sessions          Session[]
+  readingSessions   ReadingSession[]
+  suggestedBooks    Book[]             @relation("SuggestedBooks")
+  meetingRatings    MeetingRating[]
+  availability      MemberAvailability[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
   @@map("users")
 }
@@ -69,32 +72,60 @@ model VerificationToken {
 }
 
 model Book {
-  id            String           @id @default(cuid())
-  title         String
-  author        String?
-  coverUrl      String?
-  openLibraryId String?
-  totalPages    Int?
-  totalMinutes  Int?
-  format        Format           @default(PRINT)
-  isActive      Boolean          @default(true)
-  meetingId     String?
-  meeting       Meeting?         @relation(fields: [meetingId], references: [id])
+  id              String           @id @default(cuid())
+  title           String
+  author          String?
+  coverUrl        String?
+  openLibraryId   String?
+  totalPages      Int?
+  totalMinutes    Int?
+  format          Format           @default(PRINT)
+  isActive        Boolean          @default(true)
+  meetingId       String?
+  meeting         Meeting?         @relation(fields: [meetingId], references: [id])
+  suggestedByUserId String?
+  suggestedBy     User?            @relation("SuggestedBooks", fields: [suggestedByUserId], references: [id])
   readingSessions ReadingSession[]
-  createdAt     DateTime         @default(now())
+  createdAt       DateTime         @default(now())
 
   @@map("books")
 }
 
 model Meeting {
-  id        String   @id @default(cuid())
-  date      DateTime
-  location  String?
-  notes     String?
-  books     Book[]
-  createdAt DateTime @default(now())
+  id         String          @id @default(cuid())
+  date       DateTime
+  location   String?
+  notes      String?
+  archivedAt DateTime?
+  books      Book[]
+  ratings    MeetingRating[]
+  createdAt  DateTime        @default(now())
 
   @@map("meetings")
+}
+
+model MeetingRating {
+  id        String   @id @default(cuid())
+  meetingId String
+  userId    String
+  emojis    String[]
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([meetingId, userId])
+  @@map("meeting_ratings")
+}
+
+model MemberAvailability {
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime @db.Date
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
+  @@map("member_availability")
 }
 
 model ReadingSession {
