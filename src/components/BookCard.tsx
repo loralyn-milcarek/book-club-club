@@ -1,5 +1,5 @@
 import type { Book, Meeting, ReadingSession, User } from "@prisma/client";
-import { Calendar, Users, BookOpen } from "lucide-react";
+import { Calendar, Users, BookOpen, Sparkles } from "lucide-react";
 import ProgressBar from "./ProgressBar";
 import LogProgressForm from "./LogProgressForm";
 import CoverImage from "./CoverImage";
@@ -157,12 +157,12 @@ export default function BookCard({
                   {isHidden ? (
                     <span className="text-xs text-bark-muted italic">hidden</span>
                   ) : (
-                    <span className="text-xs text-bark-muted">
+                    <span className="flex items-center gap-1 text-xs text-bark-muted">
                       {formatProgress(session, book)}
-                      {expectedPercent !== undefined && session && (
-                        <span className="ml-1.5">
-                          {pct >= expectedPercent ? "✅" : "⚠️"}
-                        </span>
+                      {session && (
+                        pct >= 100 || (session.page != null && book.totalPages != null && session.page >= book.totalPages)
+                          ? <Sparkles size={12} strokeWidth={2} className="text-sage shrink-0" />
+                          : <BookOpen size={12} strokeWidth={1.75} className="text-bark-muted shrink-0" />
                       )}
                     </span>
                   )}

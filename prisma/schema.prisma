@@ -13,6 +13,17 @@ enum Format {
   AUDIO
 }
 
+enum NomStatus {
+  ACTIVE
+  SELECTED
+  ARCHIVED
+}
+
+enum VoteType {
+  UP
+  DOWN
+}
+
 model User {
   id              String           @id @default(cuid())
   name            String?
@@ -26,6 +37,8 @@ model User {
   suggestedBooks    Book[]             @relation("SuggestedBooks")
   meetingRatings    MeetingRating[]
   availability      MemberAvailability[]
+  nominations       BookNomination[]
+  nominationVotes   NominationVote[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
@@ -139,4 +152,36 @@ model ReadingSession {
   book     Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@map("reading_sessions")
+}
+
+model BookNomination {
+  id                String           @id @default(cuid())
+  title             String
+  author            String?
+  coverUrl          String?
+  openLibraryId     String?
+  blurb             String
+  olDescription     String?
+  olRating          Float?
+  olRatingCount     Int?
+  status            NomStatus        @default(ACTIVE)
+  nominatedByUserId String
+  nominatedBy       User             @relation(fields: [nominatedByUserId], references: [id], onDelete: Cascade)
+  votes             NominationVote[]
+  createdAt         DateTime         @default(now())
+
+  @@map("book_nominations")
+}
+
+model NominationVote {
+  id             String         @id @default(cuid())
+  nominationId   String
+  userId         String
+  voteType       VoteType       @default(UP)
+  nomination     BookNomination @relation(fields: [nominationId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+
+  @@unique([nominationId, userId])
+  @@map("nomination_votes")
 }

@@ -77,6 +77,7 @@ export async function addBook(formData: FormData) {
 
   const suggestedByUserId =
     (formData.get("suggestedByUserId") as string) || user.id;
+  const nominationId = (formData.get("nominationId") as string) || null;
 
   await prisma.book.create({
     data: {
@@ -85,7 +86,15 @@ export async function addBook(formData: FormData) {
     },
   });
 
+  if (nominationId) {
+    await prisma.bookNomination.update({
+      where: { id: nominationId },
+      data: { status: "SELECTED" },
+    });
+  }
+
   revalidatePath("/");
+  revalidatePath("/nominations");
   redirect("/");
 }
 
@@ -194,4 +203,67 @@ export async function setBookActive(bookId: string) {
   await prisma.book.update({ where: { id: bookId }, data: { isActive: true } });
   revalidatePath("/");
   revalidatePath("/meetings");
+}
+
+export async function nominateBook(formData: FormData) {
+  const user = await requireUser();
+
+  const title = (formData.get("title") as string).trim();
+  const author = (formData.get("author") as string | null) || null;
+  const coverUrl = (formData.get("coverUrl") as string | null) || null;
+  const openLibraryId = (formData.get("openLibraryId") as string | null) || null;
+  const blurb = (formData.get("blurb") as string).trim();
+
+  if (!title || !blurb) throw new Error("Title and pitch are required");
+
+  const olDescription = (formData.get("olDescription") as string | null) || null;
+  const olRatingRaw = formData.get("olRating");
+  const olRatingCountRaw = formData.get("olRatingCount");
+  const olRating = olRatingRaw ? parseFloat(olRatingRaw as string) : null;
+  const olRatingCount = olRatingCountRaw ? parseInt(olRatingCountRaw as string, 10) : null;
+
+  await prisma.bookNomination.create({
+    data: { title, author, coverUrl, openLibraryId, blurb, olDescription, olRating, olRatingCount, nominatedByUserId: user.id },
+  });
+
+  revalidatePath("/nominations");
+  redirect("/nominations");
+}
+
+export async function toggleNominationVote(nominationId: string, voteType: "UP" | "DOWN") {
+  const user = await requireUser();
+
+  const existing = await prisma.nominationVote.findUnique({
+    where: { nominationId_userId: { nominationId, userId: user.id } },
+  });
+
+  if (existing) {
+    if (existing.voteType === voteType) {
+      await prisma.nominationVote.delete({ where: { id: existing.id } });
+    } else {
+      await prisma.nominationVote.update({ where: { id: existing.id }, data: { voteType } });
+    }
+  } else {
+    await prisma.nominationVote.create({ data: { nominationId, userId: user.id, voteType } });
+  }
+
+  revalidatePath("/nominations");
+}
+
+export async function archiveNomination(nominationId: string) {
+  await requireUser();
+  await prisma.bookNomination.update({
+    where: { id: nominationId },
+    data: { status: "ARCHIVED" },
+  });
+  revalidatePath("/nominations");
+}
+
+export async function restoreNomination(nominationId: string) {
+  await requireUser();
+  await prisma.bookNomination.update({
+    where: { id: nominationId },
+    data: { status: "ACTIVE" },
+  });
+  revalidatePath("/nominations");
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { BookOpen, Sparkles, PlusCircle, Settings, Calendar, CalendarDays, MapPin } from "lucide-react";
+import { BookOpen, Sparkles, Settings, Calendar, UsersRound, Lightbulb } from "lucide-react";
 import BookCard from "@/components/BookCard";
 
 export default async function Home() {
@@ -77,19 +77,18 @@ export default async function Home() {
           </div>
           <div className="flex items-center gap-2">
             <Link
-              href="/books/add"
-              className="flex items-center gap-1.5 rounded-full bg-sage px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-sage/80 hover:-translate-y-0.5"
-              style={{ boxShadow: "var(--shadow-warm)" }}
+              href="/nominations"
+              className="p-2 rounded-full text-bark-muted hover:text-bark hover:bg-lace transition-colors"
+              title="Nominations"
             >
-              <PlusCircle size={14} strokeWidth={2} />
-              Add book
+              <Lightbulb size={18} strokeWidth={1.75} />
             </Link>
             <Link
               href="/meetings"
               className="p-2 rounded-full text-bark-muted hover:text-bark hover:bg-lace transition-colors"
               title="Meetings"
             >
-              <CalendarDays size={18} strokeWidth={1.75} />
+              <UsersRound size={18} strokeWidth={1.75} />
             </Link>
             <Link
               href="/availability"
@@ -148,15 +147,15 @@ export default async function Home() {
             </div>
             <div className="space-y-1">
               <p className="font-display text-xl font-bold text-bark">No books yet</p>
-              <p className="text-bark-muted text-sm">Add your current read to get started.</p>
+              <p className="text-bark-muted text-sm">Nominate a book and schedule a meeting to get started.</p>
             </div>
             <Link
-              href="/books/add"
+              href="/nominations"
               className="inline-flex items-center gap-2 rounded-full bg-blush px-6 py-3 font-semibold text-white transition-all hover:bg-blush-dark hover:-translate-y-0.5"
               style={{ boxShadow: "var(--shadow-warm)" }}
             >
-              <PlusCircle size={15} strokeWidth={2} />
-              Add the first book
+              <Sparkles size={15} strokeWidth={2} />
+              See nominations
             </Link>
           </div>
         ) : (
