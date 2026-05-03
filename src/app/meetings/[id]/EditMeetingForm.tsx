@@ -6,11 +6,13 @@ export default function EditMeetingForm({
   meetingId,
   date,
   location,
+  activity,
   notes,
 }: {
   meetingId: string;
   date: string;
   location: string;
+  activity: string;
   notes: string;
 }) {
   const action = updateMeeting.bind(null, meetingId);
@@ -41,6 +43,20 @@ export default function EditMeetingForm({
           type="text"
           defaultValue={location}
           placeholder="e.g. Sarah's place, Coffee Bean on Main…"
+          className="w-full rounded-xl border border-lace bg-cream px-4 py-2.5 text-bark text-sm placeholder:text-bark-muted focus:outline-none focus:border-blush transition-colors"
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <label htmlFor="edit-activity" className="text-sm font-semibold text-bark">
+          Activity
+        </label>
+        <input
+          id="edit-activity"
+          name="activity"
+          type="text"
+          defaultValue={activity}
+          placeholder="e.g. painted pottery, jigsaw puzzle, nature walk…"
           className="w-full rounded-xl border border-lace bg-cream px-4 py-2.5 text-bark text-sm placeholder:text-bark-muted focus:outline-none focus:border-blush transition-colors"
         />
       </div>

@@ -263,6 +263,16 @@ export default function AddBookForm({
               </div>
 
               <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-bark">Activity</label>
+                <input
+                  name="meetingActivity"
+                  type="text"
+                  placeholder="e.g. painted pottery, jigsaw puzzle, nature walk…"
+                  className="w-full rounded-2xl border border-lace bg-cream px-4 py-2.5 text-sm text-bark placeholder:text-bark-muted/60 focus:border-blush focus:outline-none focus:ring-2 focus:ring-blush/20 transition-colors"
+                />
+              </div>
+
+              <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-bark">Notes</label>
                 <textarea
                   name="meetingNotes"

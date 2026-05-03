@@ -67,11 +67,12 @@ export async function addBook(formData: FormData) {
     : null;
   const meetingDate = formData.get("meetingDate") as string;
   const meetingLocation = (formData.get("meetingLocation") as string) || null;
+  const meetingActivity = (formData.get("meetingActivity") as string) || null;
   const meetingNotes = (formData.get("meetingNotes") as string) || null;
 
   const [y, m, d] = meetingDate.split("-").map(Number);
   const meeting = await prisma.meeting.create({
-    data: { date: new Date(y, m - 1, d), location: meetingLocation, notes: meetingNotes },
+    data: { date: new Date(y, m - 1, d), location: meetingLocation, activity: meetingActivity, notes: meetingNotes },
   });
   const meetingId = meeting.id;
 
@@ -103,11 +104,12 @@ export async function createMeeting(formData: FormData) {
 
   const dateStr = formData.get("date") as string;
   const location = (formData.get("location") as string) || null;
+  const activity = (formData.get("activity") as string) || null;
   const notes = (formData.get("notes") as string) || null;
 
   const [y, m, d] = dateStr.split("-").map(Number);
   const meeting = await prisma.meeting.create({
-    data: { date: new Date(y, m - 1, d), location, notes },
+    data: { date: new Date(y, m - 1, d), location, activity, notes },
   });
 
   revalidatePath("/");
@@ -120,12 +122,13 @@ export async function updateMeeting(meetingId: string, formData: FormData) {
 
   const dateStr = formData.get("date") as string;
   const location = (formData.get("location") as string) || null;
+  const activity = (formData.get("activity") as string) || null;
   const notes = (formData.get("notes") as string) || null;
 
   const [y, m, d] = dateStr.split("-").map(Number);
   await prisma.meeting.update({
     where: { id: meetingId },
-    data: { date: new Date(y, m - 1, d), location, notes },
+    data: { date: new Date(y, m - 1, d), location, activity, notes },
   });
 
   revalidatePath("/");

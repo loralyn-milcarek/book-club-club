@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { BookOpen, Sparkles, Settings, Calendar, UsersRound, Lightbulb } from "lucide-react";
+import { BookOpen, Sparkles, Settings, Calendar, UsersRound, Lightbulb, Palette } from "lucide-react";
 import BookCard from "@/components/BookCard";
 
 export default async function Home() {
@@ -127,9 +127,16 @@ export default async function Home() {
                 {nextMeeting.date.toLocaleDateString("en-US", { weekday: "long" })}
               </p>
               {nextMeeting.books.length > 0 && (
-                <p className="text-xs text-bark-muted truncate">
-                  {nextMeeting.books.map((b) => b.title).join(", ")}
-                </p>
+                <div className="flex items-center gap-1 text-xs text-bark-muted">
+                  <BookOpen size={10} strokeWidth={2} className="shrink-0" />
+                  <span className="truncate">{nextMeeting.books.map((b) => b.title).join(", ")}</span>
+                </div>
+              )}
+              {nextMeeting.activity && (
+                <div className="flex items-center gap-1 text-xs text-bark-muted">
+                  <Palette size={10} strokeWidth={2} className="text-blush shrink-0" />
+                  <span className="truncate">{nextMeeting.activity}</span>
+                </div>
               )}
             </div>
             <span className="text-xs text-blush font-medium group-hover:underline shrink-0">Details →</span>

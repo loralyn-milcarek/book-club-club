@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { Calendar, MapPin, BookOpen, Plus, ChevronRight, ChevronLeft } from "lucide-react";
+import { Calendar, MapPin, BookOpen, Plus, ChevronRight, ChevronLeft, Palette } from "lucide-react";
 
 function formatDate(date: Date) {
   return date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
@@ -97,6 +97,7 @@ type MeetingWithDetails = {
   id: string;
   date: Date;
   location: string | null;
+  activity: string | null;
   notes: string | null;
   books: { id: string; title: string; author: string | null; coverUrl: string | null }[];
   ratings: { emojis: string[]; user: { id: string; name: string | null; email: string | null } }[];
@@ -121,19 +122,28 @@ function MeetingRow({ meeting, isUpcoming }: { meeting: MeetingWithDetails; isUp
       </div>
 
       <div className="flex-1 min-w-0 space-y-0.5">
-        <p className="font-semibold text-bark text-sm">
+        <p className=" text-bark text-xs">
           {meeting.date.toLocaleDateString("en-US", { weekday: "long" })}
         </p>
+        {meeting.books.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            <BookOpen size={11} strokeWidth={1.75} className="text-bark-muted shrink-0" />
+            <p className="font-semibold text-bark text-sm truncate">
+              {meeting.books.map((b) => b.title).join(", ")}
+            </p>
+          </div>
+        )}
         {meeting.location && (
-          <div className="flex items-center gap-1 text-xs text-bark-muted">
-            <MapPin size={10} strokeWidth={1.75} />
+          <div className="flex items-center gap-1 text-sm text-bark-muted">
+            <MapPin size={10} strokeWidth={1.75} className="shrink-0" />
             <span className="truncate">{meeting.location}</span>
           </div>
         )}
-        {meeting.books.length > 0 && (
-          <p className="text-xs text-bark-muted truncate">
-            {meeting.books.map((b) => b.title).join(", ")}
-          </p>
+        {meeting.activity && (
+          <div className="flex items-center gap-1 text-sm text-bark-muted">
+            <Palette size={10} strokeWidth={2} className="text-blush shrink-0" />
+            <span className="truncate">{meeting.activity}</span>
+          </div>
         )}
         {allEmojis.length > 0 && (
           <p className="text-sm">{allEmojis.join("")}</p>

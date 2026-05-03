@@ -108,6 +108,7 @@ model Meeting {
   id         String          @id @default(cuid())
   date       DateTime
   location   String?
+  activity   String?
   notes      String?
   archivedAt DateTime?
   books      Book[]

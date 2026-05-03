@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { ChevronLeft, MapPin, BookOpen, StickyNote } from "lucide-react";
+import { ChevronLeft, MapPin, BookOpen, StickyNote, Palette } from "lucide-react";
 import EmojiRatingForm from "./EmojiRatingForm";
 import EditableSection from "./EditableSection";
 import { setBookActive } from "@/lib/actions";
@@ -74,12 +74,14 @@ export default async function MeetingDetailPage({
             className="bg-parchment rounded-2xl p-4 border border-lace space-y-2"
             style={{ boxShadow: "var(--shadow-warm)" }}
           >
-            <p className="text-xs font-medium uppercase tracking-widest text-bark-muted">Books</p>
+            <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest text-bark-muted">
+              <BookOpen size={11} strokeWidth={2} />
+              Book
+            </div>
             {meeting.books.map((book) => {
               const reactivateAction = setBookActive.bind(null, book.id);
               return (
                 <div key={book.id} className="flex items-center gap-3">
-                  <BookOpen size={14} className={`shrink-0 ${book.isActive ? "text-bark-muted" : "text-lace"}`} strokeWidth={1.5} />
                   <div className="flex-1 min-w-0">
                     <p className={`text-sm font-semibold ${book.isActive ? "text-bark" : "text-bark-muted line-through"}`}>
                       {book.title}
@@ -100,6 +102,19 @@ export default async function MeetingDetailPage({
                 </div>
               );
             })}
+          </section>
+        )}
+
+        {meeting.activity && (
+          <section
+            className="bg-parchment rounded-2xl p-4 border border-lace space-y-1"
+            style={{ boxShadow: "var(--shadow-warm)" }}
+          >
+            <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest text-bark-muted">
+              <Palette size={11} strokeWidth={2} className="text-blush" />
+              Activity
+            </div>
+            <p className="text-sm font-medium text-bark">{meeting.activity}</p>
           </section>
         )}
 
@@ -151,6 +166,7 @@ export default async function MeetingDetailPage({
             meetingId={meeting.id}
             date={meeting.date.toISOString().split("T")[0]}
             location={meeting.location ?? ""}
+            activity={meeting.activity ?? ""}
             notes={meeting.notes ?? ""}
             isPast={isPast}
           />

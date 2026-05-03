@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Book, Meeting, ReadingSession, User } from "@prisma/client";
 import { Calendar, Users, BookOpen, Sparkles } from "lucide-react";
 import ProgressBar from "./ProgressBar";
@@ -97,7 +98,10 @@ export default function BookCard({
             <p className="text-sm text-bark-muted">{book.author}</p>
           )}
           {book.meeting && (
-            <div className="flex items-center gap-1.5 text-xs text-bark-muted pt-1">
+            <Link
+              href={`/meetings/${book.meeting.id}`}
+              className="flex items-center gap-1.5 text-xs text-bark-muted pt-1 hover:text-bark transition-colors w-fit"
+            >
               <Calendar size={12} strokeWidth={1.75} />
               <span>
                 Meeting{" "}
@@ -116,7 +120,7 @@ export default function BookCard({
                   </span>
                 )}
               </span>
-            </div>
+            </Link>
           )}
           {book.suggestedBy && (
             <p className="text-xs text-bark-muted">

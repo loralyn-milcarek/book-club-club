@@ -9,12 +9,14 @@ export default function EditableSection({
   meetingId,
   date,
   location,
+  activity,
   notes,
   isPast,
 }: {
   meetingId: string;
   date: string;
   location: string;
+  activity: string;
   notes: string;
   isPast: boolean;
 }) {
@@ -43,7 +45,13 @@ export default function EditableSection({
           <X size={14} strokeWidth={2} />
         </button>
       </div>
-      <EditMeetingForm meetingId={meetingId} date={date} location={location} notes={notes} />
+      <EditMeetingForm
+        meetingId={meetingId}
+        date={date}
+        location={location}
+        activity={activity}
+        notes={notes}
+      />
       {!isPast && (
         <div className="pt-2 border-t border-lace">
           <DeleteMeetingButton meetingId={meetingId} isPast={isPast} />
