@@ -119,11 +119,11 @@ export default function AvailabilityCalendar({
                   : "text-bark hover:bg-lace"
                 }
               `}
-              title={meetingTitle ? `📚 ${meetingTitle}${isMyBlock ? " · you're unavailable" : ""}` : isMyBlock ? "Click to mark as available" : otherBlockers.length > 0 ? `${otherBlockers.map((b) => b.name).join(", ")} unavailable` : "Click to mark as unavailable"}
+              title={meetingTitle ? `${meetingTitle}${isMyBlock ? " · you're unavailable" : ""}` : isMyBlock ? "Click to mark as available" : otherBlockers.length > 0 ? `${otherBlockers.map((b) => b.name).join(", ")} unavailable` : "Click to mark as unavailable"}
             >
               {day}
               {meetingTitle && (
-                <span className="absolute top-0.5 right-0.5 text-[8px] leading-none">📚</span>
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-sage" />
               )}
               {isMyBlock && (
                 <svg
@@ -156,8 +156,10 @@ export default function AvailabilityCalendar({
           Others unavailable
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm ring-2 ring-sage shrink-0" />
-          Book club 📚
+          <div className="relative w-3 h-3 rounded-sm ring-2 ring-sage shrink-0">
+            <span className="absolute top-0.5 right-0.5 w-1 h-1 rounded-full bg-sage" />
+          </div>
+          Book club
         </div>
       </div>
 

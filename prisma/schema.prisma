@@ -39,6 +39,8 @@ model User {
   availability      MemberAvailability[]
   nominations       BookNomination[]
   nominationVotes   NominationVote[]
+  activityPhotos    ActivityPhoto[]    @relation("UploadedPhotos")
+  galleryComments   GalleryComment[]   @relation("GalleryComments")
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
@@ -105,7 +107,7 @@ model Book {
 }
 
 model Meeting {
-  id         String          @id @default(cuid())
+  id         String           @id @default(cuid())
   date       DateTime
   location   String?
   activity   String?
@@ -113,16 +115,43 @@ model Meeting {
   archivedAt DateTime?
   books      Book[]
   ratings    MeetingRating[]
-  createdAt  DateTime        @default(now())
+  photos     ActivityPhoto[]
+  comments   GalleryComment[]
+  createdAt  DateTime         @default(now())
 
   @@map("meetings")
+}
+
+model ActivityPhoto {
+  id               String   @id @default(cuid())
+  meetingId        String
+  url              String
+  caption          String?
+  uploadedByUserId String
+  meeting          Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  uploadedBy       User     @relation("UploadedPhotos", fields: [uploadedByUserId], references: [id])
+  createdAt        DateTime @default(now())
+
+  @@map("activity_photos")
+}
+
+model GalleryComment {
+  id        String   @id @default(cuid())
+  meetingId String
+  userId    String
+  text      String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user      User     @relation("GalleryComments", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("gallery_comments")
 }
 
 model MeetingRating {
   id        String   @id @default(cuid())
   meetingId String
   userId    String
-  emojis    String[]
+  icons     String[] @map("emojis")
   meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())

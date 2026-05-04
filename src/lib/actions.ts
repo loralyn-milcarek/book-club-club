@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import type { Format } from "@prisma/client";
+import { put, del } from "@vercel/blob";
 
 async function requireUser() {
   const session = await auth();
@@ -140,15 +141,15 @@ export async function updateMeeting(meetingId: string, formData: FormData) {
 export async function rateMeeting(meetingId: string, formData: FormData) {
   const user = await requireUser();
 
-  const emojisRaw = formData.get("emojis") as string;
-  const emojis = emojisRaw
-    ? emojisRaw.split(",").map((e) => e.trim()).filter(Boolean).slice(0, 3)
+  const iconsRaw = formData.get("icons") as string;
+  const icons = iconsRaw
+    ? iconsRaw.split(",").map((i) => i.trim()).filter(Boolean).slice(0, 3)
     : [];
 
   await prisma.meetingRating.upsert({
     where: { meetingId_userId: { meetingId, userId: user.id } },
-    create: { meetingId, userId: user.id, emojis },
-    update: { emojis },
+    create: { meetingId, userId: user.id, icons },
+    update: { icons },
   });
 
   revalidatePath("/meetings");
@@ -269,4 +270,59 @@ export async function restoreNomination(nominationId: string) {
     data: { status: "ACTIVE" },
   });
   revalidatePath("/nominations");
+}
+
+export async function uploadActivityPhoto(meetingId: string, formData: FormData) {
+  const user = await requireUser();
+
+  const file = formData.get("file") as File | null;
+  if (!file || file.size === 0) throw new Error("No file provided");
+
+  const caption = (formData.get("caption") as string | null) || null;
+
+  const ext = file.name.split(".").pop() ?? "jpg";
+  const filename = `book-club-club/${meetingId}/${Date.now()}.${ext}`;
+  const blob = await put(filename, file, { access: "public" });
+
+  await prisma.activityPhoto.create({
+    data: { meetingId, url: blob.url, caption, uploadedByUserId: user.id },
+  });
+
+  revalidatePath(`/meetings/${meetingId}`);
+}
+
+export async function deleteActivityPhoto(photoId: string) {
+  const user = await requireUser();
+
+  const photo = await prisma.activityPhoto.findUnique({ where: { id: photoId } });
+  if (!photo) throw new Error("Photo not found");
+  if (photo.uploadedByUserId !== user.id) throw new Error("Not your photo");
+
+  await del(photo.url);
+  await prisma.activityPhoto.delete({ where: { id: photoId } });
+  revalidatePath(`/meetings/${photo.meetingId}`);
+}
+
+export async function addGalleryComment(meetingId: string, formData: FormData) {
+  const user = await requireUser();
+
+  const text = (formData.get("text") as string).trim();
+  if (!text) throw new Error("Comment cannot be empty");
+
+  await prisma.galleryComment.create({
+    data: { meetingId, userId: user.id, text },
+  });
+
+  revalidatePath(`/meetings/${meetingId}`);
+}
+
+export async function deleteGalleryComment(commentId: string) {
+  const user = await requireUser();
+
+  const comment = await prisma.galleryComment.findUnique({ where: { id: commentId } });
+  if (!comment) throw new Error("Comment not found");
+  if (comment.userId !== user.id) throw new Error("Not your comment");
+
+  await prisma.galleryComment.delete({ where: { id: commentId } });
+  revalidatePath(`/meetings/${comment.meetingId}`);
 }

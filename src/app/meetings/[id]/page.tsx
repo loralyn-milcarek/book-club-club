@@ -2,9 +2,11 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { ChevronLeft, MapPin, BookOpen, StickyNote, Palette } from "lucide-react";
-import EmojiRatingForm from "./EmojiRatingForm";
+import { ChevronLeft, MapPin, BookOpen, StickyNote } from "lucide-react";
+import IconRatingForm from "./IconRatingForm";
 import EditableSection from "./EditableSection";
+import PhotoGallery from "@/components/PhotoGallery";
+import { RatingIcon } from "@/components/RatingIcon";
 import { setBookActive } from "@/lib/actions";
 
 export default async function MeetingDetailPage({
@@ -28,6 +30,18 @@ export default async function MeetingDetailPage({
           user: { select: { id: true, name: true, email: true } },
         },
       },
+      photos: {
+        include: {
+          uploadedBy: { select: { name: true, email: true } },
+        },
+        orderBy: { createdAt: "asc" },
+      },
+      comments: {
+        include: {
+          user: { select: { name: true, email: true } },
+        },
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
 
@@ -47,6 +61,9 @@ export default async function MeetingDetailPage({
   function displayName(user: { name: string | null; email: string | null }) {
     return user.name || (user.email ?? "").split("@")[0];
   }
+
+  const showActivityPhotos =
+    isPast || meeting.activity || meeting.photos.length > 0;
 
   return (
     <main className="min-h-screen bg-cream">
@@ -69,53 +86,84 @@ export default async function MeetingDetailPage({
           </div>
         </header>
 
+        {/* Book + icon review combined */}
         {meeting.books.length > 0 && (
           <section
-            className="bg-parchment rounded-2xl p-4 border border-lace space-y-2"
+            className="bg-parchment rounded-2xl p-4 border border-lace space-y-4"
             style={{ boxShadow: "var(--shadow-warm)" }}
           >
             <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest text-bark-muted">
               <BookOpen size={11} strokeWidth={2} />
               Book
             </div>
-            {meeting.books.map((book) => {
-              const reactivateAction = setBookActive.bind(null, book.id);
-              return (
-                <div key={book.id} className="flex items-center gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-semibold ${book.isActive ? "text-bark" : "text-bark-muted line-through"}`}>
-                      {book.title}
-                    </p>
-                    {book.author && <p className="text-xs text-bark-muted">{book.author}</p>}
-                    {!book.isActive && <p className="text-xs text-bark-muted italic">Marked finished</p>}
+
+            <div className="space-y-2">
+              {meeting.books.map((book) => {
+                const reactivateAction = setBookActive.bind(null, book.id);
+                return (
+                  <div key={book.id} className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-semibold ${book.isActive ? "text-bark" : "text-bark-muted line-through"}`}>
+                        {book.title}
+                      </p>
+                      {book.author && <p className="text-xs text-bark-muted">{book.author}</p>}
+                      {!book.isActive && <p className="text-xs text-bark-muted italic">Marked finished</p>}
+                    </div>
+                    {!book.isActive && (
+                      <form action={reactivateAction} className="shrink-0">
+                        <button
+                          type="submit"
+                          className="text-xs text-sage font-medium hover:text-sage/70 transition-colors"
+                        >
+                          Reactivate
+                        </button>
+                      </form>
+                    )}
                   </div>
-                  {!book.isActive && (
-                    <form action={reactivateAction} className="shrink-0">
-                      <button
-                        type="submit"
-                        className="text-xs text-sage font-medium hover:text-sage/70 transition-colors"
-                      >
-                        Reactivate
-                      </button>
-                    </form>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+
+            {/* Ratings display */}
+            {meeting.ratings.length > 0 && (
+              <div className="pt-1 border-t border-lace space-y-2">
+                {meeting.ratings.map((r) => (
+                  <div key={r.userId} className="flex items-center gap-2">
+                    <span className="text-xs text-bark-muted w-20 truncate shrink-0">
+                      {displayName(r.user)}
+                    </span>
+                    <div className="flex gap-1.5">
+                      {r.icons.map((iconName) => (
+                        <RatingIcon key={iconName} name={iconName} size={15} className="text-bark" />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Icon rating form */}
+            {isPast && (
+              <div className={meeting.ratings.length > 0 ? "" : "pt-1 border-t border-lace"}>
+                <IconRatingForm
+                  meetingId={meeting.id}
+                  currentIcons={myRating?.icons ?? []}
+                />
+              </div>
+            )}
           </section>
         )}
 
-        {meeting.activity && (
-          <section
-            className="bg-parchment rounded-2xl p-4 border border-lace space-y-1"
-            style={{ boxShadow: "var(--shadow-warm)" }}
-          >
-            <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest text-bark-muted">
-              <Palette size={11} strokeWidth={2} className="text-blush" />
-              Activity
-            </div>
-            <p className="text-sm font-medium text-bark">{meeting.activity}</p>
-          </section>
+        {/* Activity + Photos combined */}
+        {showActivityPhotos && (
+          <PhotoGallery
+            meetingId={meeting.id}
+            activity={meeting.activity}
+            photos={meeting.photos}
+            comments={meeting.comments}
+            currentUserId={session.user!.id}
+            isPast={isPast}
+          />
         )}
 
         {meeting.notes && (
@@ -128,33 +176,6 @@ export default async function MeetingDetailPage({
               Notes
             </div>
             <p className="text-sm text-bark whitespace-pre-wrap">{meeting.notes}</p>
-          </section>
-        )}
-
-        {isPast && (
-          <section
-            className="bg-parchment rounded-2xl p-4 border border-lace space-y-3"
-            style={{ boxShadow: "var(--shadow-warm)" }}
-          >
-            <p className="text-xs font-medium uppercase tracking-widest text-bark-muted">
-              How was it? ({meeting.ratings.length} rating{meeting.ratings.length !== 1 ? "s" : ""})
-            </p>
-
-            {meeting.ratings.length > 0 && (
-              <div className="space-y-1">
-                {meeting.ratings.map((r) => (
-                  <div key={r.userId} className="flex items-center gap-2 text-sm">
-                    <span className="text-bark-muted w-24 truncate">{displayName(r.user)}</span>
-                    <span>{r.emojis.join("")}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <EmojiRatingForm
-              meetingId={meeting.id}
-              currentEmojis={myRating?.emojis ?? []}
-            />
           </section>
         )}
 

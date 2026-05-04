@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { Calendar, MapPin, BookOpen, Plus, ChevronRight, ChevronLeft, Palette } from "lucide-react";
+import { RatingIcon } from "@/components/RatingIcon";
 
 function formatDate(date: Date) {
   return date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
@@ -100,11 +101,11 @@ type MeetingWithDetails = {
   activity: string | null;
   notes: string | null;
   books: { id: string; title: string; author: string | null; coverUrl: string | null }[];
-  ratings: { emojis: string[]; user: { id: string; name: string | null; email: string | null } }[];
+  ratings: { icons: string[]; user: { id: string; name: string | null; email: string | null } }[];
 };
 
 function MeetingRow({ meeting, isUpcoming }: { meeting: MeetingWithDetails; isUpcoming: boolean }) {
-  const allEmojis = meeting.ratings.flatMap((r) => r.emojis);
+  const allIcons = meeting.ratings.flatMap((r) => r.icons);
 
   return (
     <Link
@@ -122,7 +123,7 @@ function MeetingRow({ meeting, isUpcoming }: { meeting: MeetingWithDetails; isUp
       </div>
 
       <div className="flex-1 min-w-0 space-y-0.5">
-        <p className=" text-bark text-xs">
+        <p className="text-bark text-xs">
           {meeting.date.toLocaleDateString("en-US", { weekday: "long" })}
         </p>
         {meeting.books.length > 0 && (
@@ -145,8 +146,12 @@ function MeetingRow({ meeting, isUpcoming }: { meeting: MeetingWithDetails; isUp
             <span className="truncate">{meeting.activity}</span>
           </div>
         )}
-        {allEmojis.length > 0 && (
-          <p className="text-sm">{allEmojis.join("")}</p>
+        {allIcons.length > 0 && (
+          <div className="flex gap-1.5 flex-wrap">
+            {[...new Set(allIcons)].map((name) => (
+              <RatingIcon key={name} name={name} size={13} className="text-bark-muted" />
+            ))}
+          </div>
         )}
       </div>
 

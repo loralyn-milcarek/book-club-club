@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { BookOpen, Sparkles, Settings, Calendar, UsersRound, Lightbulb, Palette } from "lucide-react";
 import BookCard from "@/components/BookCard";
+import { RatingIcon } from "@/components/RatingIcon";
 
 export default async function Home() {
   const session = await auth();
@@ -38,21 +39,32 @@ export default async function Home() {
 
   const now = new Date();
 
-  const [activeBooks, currentUser, allSessions, nextMeeting] = await Promise.all([
+  const [currentBooks, pastBooks, currentUser, allSessions, nextMeeting] = await Promise.all([
     prisma.book.findMany({
-      where: { isActive: true },
+      where: { isActive: true, meeting: { date: { gte: now }, archivedAt: null } },
       include: {
         meeting: true,
         suggestedBy: { select: { id: true, name: true, email: true } },
       },
-      orderBy: { createdAt: "asc" },
+      orderBy: { meeting: { date: "asc" } },
+    }),
+    prisma.book.findMany({
+      where: { meeting: { date: { lt: now }, archivedAt: null } },
+      include: {
+        meeting: {
+          include: {
+            ratings: { select: { icons: true } },
+          },
+        },
+      },
+      orderBy: { meeting: { date: "desc" } },
     }),
     prisma.user.findUnique({
       where: { id: currentUserId },
       select: { progressPublic: true },
     }),
     prisma.readingSession.findMany({
-      where: { book: { isActive: true } },
+      where: { book: { isActive: true, meeting: { date: { gte: now } } } },
       orderBy: { loggedAt: "desc" },
       include: {
         user: { select: { id: true, name: true, email: true, progressPublic: true } },
@@ -143,7 +155,7 @@ export default async function Home() {
           </Link>
         )}
 
-        {activeBooks.length === 0 ? (
+        {currentBooks.length === 0 && pastBooks.length === 0 ? (
           <div
             className="bg-parchment rounded-3xl p-8 border border-lace text-center space-y-4"
             style={{ boxShadow: "var(--shadow-warm)" }}
@@ -166,19 +178,63 @@ export default async function Home() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
-            <p className="text-xs font-medium uppercase tracking-widest text-bark-muted">
-              Currently reading
-            </p>
-            {activeBooks.map((book) => (
-              <BookCard
-                key={book.id}
-                book={book}
-                sessions={allSessions.filter((s) => s.bookId === book.id)}
-                currentUserId={currentUserId}
-                currentUserProgressPublic={progressPublic}
-              />
-            ))}
+          <div className="space-y-6">
+            {currentBooks.length > 0 && (
+              <div className="space-y-4">
+                <p className="text-xs font-medium uppercase tracking-widest text-bark-muted">
+                  Currently reading
+                </p>
+                {currentBooks.map((book) => (
+                  <BookCard
+                    key={book.id}
+                    book={book}
+                    sessions={allSessions.filter((s) => s.bookId === book.id)}
+                    currentUserId={currentUserId}
+                    currentUserProgressPublic={progressPublic}
+                  />
+                ))}
+              </div>
+            )}
+
+            {pastBooks.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-widest text-bark-muted">
+                  Past reads
+                </p>
+                {pastBooks.map((book) => {
+                  const allIcons = book.meeting?.ratings.flatMap((r) => r.icons) ?? [];
+                  const uniqueIcons = [...new Set(allIcons)];
+                  return (
+                    <Link
+                      key={book.id}
+                      href={book.meeting ? `/meetings/${book.meeting.id}` : "#"}
+                      className="flex items-center gap-3 bg-parchment rounded-2xl px-4 py-3 border border-lace hover:border-blush-light transition-all hover:-translate-y-0.5"
+                      style={{ boxShadow: "var(--shadow-warm)" }}
+                    >
+                      <div className="shrink-0 w-10 h-10 rounded-xl bg-lace flex flex-col items-center justify-center text-[10px] font-bold text-bark-muted">
+                        <span className="text-sm leading-none">
+                          {book.meeting?.date.toLocaleDateString("en-US", { day: "numeric" })}
+                        </span>
+                        <span className="uppercase tracking-wide">
+                          {book.meeting?.date.toLocaleDateString("en-US", { month: "short" })}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-bark truncate">{book.title}</p>
+                        {book.author && <p className="text-xs text-bark-muted truncate">{book.author}</p>}
+                      </div>
+                      {uniqueIcons.length > 0 && (
+                        <div className="flex gap-1.5 shrink-0">
+                          {uniqueIcons.slice(0, 4).map((name) => (
+                            <RatingIcon key={name} name={name} size={13} className="text-bark-muted" />
+                          ))}
+                        </div>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
