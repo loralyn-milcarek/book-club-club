@@ -30,7 +30,8 @@ model User {
   email           String?          @unique
   emailVerified   DateTime?
   image           String?
-  progressPublic  Boolean          @default(true)
+  progressPublic       Boolean          @default(true)
+  onboardingCompleted  Boolean          @default(false)
   accounts          Account[]
   sessions          Session[]
   readingSessions   ReadingSession[]
@@ -91,7 +92,7 @@ model Book {
   title           String
   author          String?
   coverUrl        String?
-  openLibraryId   String?
+  googleBooksId   String?
   totalPages      Int?
   totalMinutes    Int?
   format          Format           @default(PRINT)
@@ -189,11 +190,11 @@ model BookNomination {
   title             String
   author            String?
   coverUrl          String?
-  openLibraryId     String?
+  googleBooksId     String?
   blurb             String
-  olDescription     String?
-  olRating          Float?
-  olRatingCount     Int?
+  gbDescription     String?
+  gbRating          Float?
+  gbRatingCount     Int?
   status            NomStatus        @default(ACTIVE)
   nominatedByUserId String
   nominatedBy       User             @relation(fields: [nominatedByUserId], references: [id], onDelete: Cascade)

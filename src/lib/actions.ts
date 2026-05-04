@@ -65,7 +65,7 @@ export async function addBook(formData: FormData) {
   const title = formData.get("title") as string;
   const author = (formData.get("author") as string) || null;
   const coverUrl = (formData.get("coverUrl") as string) || null;
-  const openLibraryId = (formData.get("openLibraryId") as string) || null;
+  const googleBooksId = (formData.get("googleBooksId") as string) || null;
   const format = ((formData.get("format") as string) || "PRINT") as Format;
   const totalPages = formData.get("totalPages")
     ? parseInt(formData.get("totalPages") as string, 10)
@@ -89,7 +89,7 @@ export async function addBook(formData: FormData) {
 
   await prisma.book.create({
     data: {
-      title, author, coverUrl, openLibraryId, format, totalPages, totalMinutes, meetingId,
+      title, author, coverUrl, googleBooksId, format, totalPages, totalMinutes, meetingId,
       suggestedByUserId,
     },
   });
@@ -219,19 +219,19 @@ export async function nominateBook(formData: FormData) {
   const title = (formData.get("title") as string).trim();
   const author = (formData.get("author") as string | null) || null;
   const coverUrl = (formData.get("coverUrl") as string | null) || null;
-  const openLibraryId = (formData.get("openLibraryId") as string | null) || null;
+  const googleBooksId = (formData.get("googleBooksId") as string | null) || null;
   const blurb = (formData.get("blurb") as string).trim();
 
   if (!title || !blurb) throw new Error("Title and pitch are required");
 
-  const olDescription = (formData.get("olDescription") as string | null) || null;
-  const olRatingRaw = formData.get("olRating");
-  const olRatingCountRaw = formData.get("olRatingCount");
-  const olRating = olRatingRaw ? parseFloat(olRatingRaw as string) : null;
-  const olRatingCount = olRatingCountRaw ? parseInt(olRatingCountRaw as string, 10) : null;
+  const gbDescription = (formData.get("gbDescription") as string | null) || null;
+  const gbRatingRaw = formData.get("gbRating");
+  const gbRatingCountRaw = formData.get("gbRatingCount");
+  const gbRating = gbRatingRaw ? parseFloat(gbRatingRaw as string) : null;
+  const gbRatingCount = gbRatingCountRaw ? parseInt(gbRatingCountRaw as string, 10) : null;
 
   await prisma.bookNomination.create({
-    data: { title, author, coverUrl, openLibraryId, blurb, olDescription, olRating, olRatingCount, nominatedByUserId: user.id },
+    data: { title, author, coverUrl, googleBooksId, blurb, gbDescription, gbRating, gbRatingCount, nominatedByUserId: user.id },
   });
 
   revalidatePath("/nominations");
@@ -318,6 +318,15 @@ export async function addGalleryComment(meetingId: string, formData: FormData) {
   });
 
   revalidatePath(`/meetings/${meetingId}`);
+}
+
+export async function completeOnboarding() {
+  const user = await requireUser();
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { onboardingCompleted: true },
+  });
+  revalidatePath("/");
 }
 
 export async function deleteGalleryComment(commentId: string) {

@@ -83,7 +83,7 @@ export default function AddBookForm({
       formData.set("title", selected.title);
       formData.set("author", selected.author);
       formData.set("coverUrl", selected.coverUrl);
-      formData.set("openLibraryId", selected.volumeId);
+      formData.set("googleBooksId", selected.volumeId);
       if (selected.totalPages) formData.set("totalPages", String(selected.totalPages));
     }
     if (nominationId) formData.set("nominationId", nominationId);

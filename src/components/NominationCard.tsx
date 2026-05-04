@@ -12,11 +12,11 @@ type Nomination = {
   title: string;
   author: string | null;
   coverUrl: string | null;
-  openLibraryId: string | null;
+  googleBooksId: string | null;
   blurb: string;
-  olDescription: string | null;
-  olRating: number | null;
-  olRatingCount: number | null;
+  gbDescription: string | null;
+  gbRating: number | null;
+  gbRatingCount: number | null;
   status: string;
   nominatedBy: { id: string; name: string | null; email: string | null };
   votes: { userId: string; voteType: string }[];
@@ -49,10 +49,10 @@ export default function NominationCard({
   const downCount = nomination.votes.filter((v) => v.voteType === "DOWN").length;
 
   const nomName = displayName(nomination.nominatedBy);
-  const olUrl = nomination.openLibraryId
-    ? `https://openlibrary.org${nomination.openLibraryId}`
+  const gbUrl = nomination.googleBooksId
+    ? `https://books.google.com/books?id=${nomination.googleBooksId}`
     : null;
-  const hasOlSection = nomination.olRating !== null || !!nomination.olDescription;
+  const hasGbSection = nomination.gbRating !== null || !!nomination.gbDescription;
 
   return (
     <div
@@ -83,38 +83,38 @@ export default function NominationCard({
         {nomination.blurb}
       </div>
 
-      {hasOlSection && (
+      {hasGbSection && (
         <div className={boxClass}>
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
-              {olUrl ? (
+              {gbUrl ? (
                 <a
-                  href={olUrl}
+                  href={gbUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={labelClass + " mb-0 flex items-center gap-1 hover:text-bark transition-colors"}
                 >
-                  Open Library says...
+                  Google Books says...
                   <ExternalLink size={9} strokeWidth={2.5} />
                 </a>
               ) : (
-                <p className={labelClass + " mb-0"}>Open Library says...</p>
+                <p className={labelClass + " mb-0"}>Google Books says...</p>
               )}
             </div>
-            {nomination.olRating !== null && (
+            {nomination.gbRating !== null && (
               <div className="flex items-center gap-1">
                 <Star size={10} className="fill-bark-muted text-bark-muted shrink-0" />
                 <span className="text-[10px] text-bark-muted">
-                  {nomination.olRating}
-                  {nomination.olRatingCount !== null && (
-                    <> · {formatRatingCount(nomination.olRatingCount)}</>
+                  {nomination.gbRating}
+                  {nomination.gbRatingCount !== null && (
+                    <> · {formatRatingCount(nomination.gbRatingCount)}</>
                   )}
                 </span>
               </div>
             )}
           </div>
-          {nomination.olDescription ? (
-            <p className="line-clamp-3">{nomination.olDescription}</p>
+          {nomination.gbDescription ? (
+            <p className="line-clamp-3">{nomination.gbDescription}</p>
           ) : (
             <p className="text-bark-muted italic">No description available.</p>
           )}

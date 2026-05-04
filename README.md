@@ -1,6 +1,16 @@
 # Book Club Club
 
-A book club management application for organizing clubs, tracking reads, and keeping members in sync.
+A shared app for a small book club to track reading progress, schedule meetings, nominate books, and keep a photo archive of craft nights.
+
+## Features
+
+- Magic link authentication (email-only, allowlist-gated)
+- Reading progress tracker with per-member progress bars
+- Meeting scheduling with emoji ratings
+- Member availability / blackout calendar
+- Book nominations with voting
+- Activity photo gallery with polaroid cards and comments
+- First-login onboarding tour
 
 ## Tech Stack
 
@@ -9,6 +19,7 @@ A book club management application for organizing clubs, tracking reads, and kee
 - **Database**: PostgreSQL (Neon)
 - **ORM**: Prisma
 - **Authentication**: NextAuth v5
+- **Image storage**: Vercel Blob
 - **Deployment**: Vercel
 
 ## Development

@@ -23,9 +23,9 @@ type SelectedBook = {
   author: string;
   coverUrl: string;
   volumeId: string;
-  olDescription: string;
-  olRating: number | null;
-  olRatingCount: number | null;
+  gbDescription: string;
+  gbRating: number | null;
+  gbRatingCount: number | null;
 };
 
 function getCoverUrl(vol: GBVolume): string {
@@ -61,9 +61,9 @@ export default function NominateBookForm() {
       author: vol.volumeInfo.authors?.[0] ?? "",
       coverUrl: getCoverUrl(vol),
       volumeId: vol.id,
-      olDescription: description ?? "",
-      olRating: averageRating != null ? Math.round(averageRating * 10) / 10 : null,
-      olRatingCount: ratingsCount ?? null,
+      gbDescription: description ?? "",
+      gbRating: averageRating != null ? Math.round(averageRating * 10) / 10 : null,
+      gbRatingCount: ratingsCount ?? null,
     });
     setResults([]);
     setQuery("");
@@ -74,10 +74,10 @@ export default function NominateBookForm() {
       formData.set("title", selected.title);
       formData.set("author", selected.author);
       formData.set("coverUrl", selected.coverUrl);
-      formData.set("openLibraryId", selected.volumeId);
-      formData.set("olDescription", selected.olDescription);
-      if (selected.olRating !== null) formData.set("olRating", String(selected.olRating));
-      if (selected.olRatingCount !== null) formData.set("olRatingCount", String(selected.olRatingCount));
+      formData.set("googleBooksId", selected.volumeId);
+      formData.set("gbDescription", selected.gbDescription);
+      if (selected.gbRating !== null) formData.set("gbRating", String(selected.gbRating));
+      if (selected.gbRatingCount !== null) formData.set("gbRatingCount", String(selected.gbRatingCount));
     }
     startTransition(() => nominateBook(formData));
   }
@@ -114,11 +114,11 @@ export default function NominateBookForm() {
                   {selected.author && (
                     <p className="text-xs text-bark-muted">{selected.author}</p>
                   )}
-                  {selected.olRating !== null && (
+                  {selected.gbRating !== null && (
                     <div className="flex items-center gap-1 mt-0.5">
                       <Star size={11} className="fill-bark-muted text-bark-muted" />
                       <span className="text-xs text-bark-muted">
-                        {selected.olRating} · {selected.olRatingCount?.toLocaleString()} ratings
+                        {selected.gbRating} · {selected.gbRatingCount?.toLocaleString()} ratings
                       </span>
                     </div>
                   )}
@@ -131,11 +131,11 @@ export default function NominateBookForm() {
                 </button>
               </div>
 
-              {selected.olDescription && (
+              {selected.gbDescription && (
                 <div className="rounded-2xl bg-cream border border-lace px-4 py-3">
                   <p className="text-xs font-medium text-bark-muted mb-1">From Google Books</p>
                   <p className="text-xs text-bark/80 leading-relaxed line-clamp-4">
-                    {selected.olDescription}
+                    {selected.gbDescription}
                   </p>
                 </div>
               )}

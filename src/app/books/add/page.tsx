@@ -28,7 +28,7 @@ export default async function AddBookPage({
         title: nomination.title,
         author: nomination.author ?? "",
         coverUrl: nomination.coverUrl ?? "",
-        volumeId: nomination.openLibraryId ?? "",
+        volumeId: nomination.googleBooksId ?? "",
         totalPages: null as number | null,
       }
     : null;

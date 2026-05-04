@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { BookOpen, Sparkles, Settings, Calendar, UsersRound, Lightbulb, Palette } from "lucide-react";
 import BookCard from "@/components/BookCard";
 import { RatingIcon } from "@/components/RatingIcon";
+import OnboardingModal from "@/components/OnboardingModal";
 
 export default async function Home() {
   const session = await auth();
@@ -61,7 +62,7 @@ export default async function Home() {
     }),
     prisma.user.findUnique({
       where: { id: currentUserId },
-      select: { progressPublic: true },
+      select: { progressPublic: true, onboardingCompleted: true },
     }),
     prisma.readingSession.findMany({
       where: { book: { isActive: true, meeting: { date: { gte: now } } } },
@@ -78,9 +79,11 @@ export default async function Home() {
   ]);
 
   const progressPublic = currentUser?.progressPublic ?? true;
+  const showOnboarding = !(currentUser?.onboardingCompleted ?? true);
 
   return (
     <main className="min-h-screen bg-cream">
+      <OnboardingModal show={showOnboarding} />
       <div className="mx-auto max-w-lg px-4 py-8 space-y-6">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-2">
