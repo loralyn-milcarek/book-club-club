@@ -84,7 +84,6 @@ export default async function Home() {
       <div className="mx-auto max-w-lg px-4 py-8 space-y-6">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <BookOpen className="text-blush" size={24} strokeWidth={1.5} />
             <h1 className="font-display text-2xl font-bold text-bark">Book Club Club</h1>
           </div>
           <div className="flex items-center gap-2">
