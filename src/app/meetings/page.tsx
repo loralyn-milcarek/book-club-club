@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { Calendar, MapPin, BookOpen, Plus, ChevronRight, ChevronLeft, Palette } from "lucide-react";
 import { RatingIcon } from "@/components/RatingIcon";
+import CoverImage from "@/components/CoverImage";
 
 function formatDate(date: Date) {
   return date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
@@ -106,14 +107,19 @@ type MeetingWithDetails = {
 
 function MeetingRow({ meeting, isUpcoming }: { meeting: MeetingWithDetails; isUpcoming: boolean }) {
   const allIcons = meeting.ratings.flatMap((r) => r.icons);
+  const cover = meeting.books.find((b) => b.coverUrl)?.coverUrl ?? null;
+  const hasTime = meeting.date.getHours() !== 0 || meeting.date.getMinutes() !== 0;
+  const timeStr = hasTime
+    ? meeting.date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
+    : null;
 
   return (
     <Link
       href={`/meetings/${meeting.id}`}
-      className="flex items-center gap-4 bg-parchment rounded-2xl p-4 border border-lace hover:border-blush-light transition-all hover:-translate-y-0.5 group"
+      className="flex items-center gap-3 bg-parchment rounded-2xl p-3 border border-lace hover:border-blush-light transition-all hover:-translate-y-0.5 group"
       style={{ boxShadow: "var(--shadow-warm)" }}
     >
-      <div className={`shrink-0 w-12 h-12 rounded-xl flex flex-col items-center justify-center text-xs font-bold ${isUpcoming ? "bg-blush-light text-blush-dark" : "bg-lace text-bark-muted"}`}>
+      <div className={`shrink-0 w-11 h-11 rounded-xl flex flex-col items-center justify-center text-xs font-bold ${isUpcoming ? "bg-blush-light text-blush-dark" : "bg-lace text-bark-muted"}`}>
         <span className="text-base leading-none">
           {meeting.date.toLocaleDateString("en-US", { day: "numeric" })}
         </span>
@@ -122,9 +128,19 @@ function MeetingRow({ meeting, isUpcoming }: { meeting: MeetingWithDetails; isUp
         </span>
       </div>
 
+      {cover && (
+        <CoverImage
+          src={cover}
+          alt=""
+          className="shrink-0 w-8 h-11 rounded-lg"
+          iconSize={12}
+        />
+      )}
+
       <div className="flex-1 min-w-0 space-y-0.5">
         <p className="text-bark text-xs">
           {meeting.date.toLocaleDateString("en-US", { weekday: "long" })}
+          {timeStr && <span className="text-bark-muted"> · {timeStr}</span>}
         </p>
         {meeting.books.length > 0 && (
           <div className="flex items-center gap-1.5">

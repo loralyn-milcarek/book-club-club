@@ -6,19 +6,21 @@ import { BookOpen, Search, Loader2, ArrowLeft } from "lucide-react";
 import CoverImage from "@/components/CoverImage";
 import Link from "next/link";
 
-type OLDoc = {
-  key: string;
-  title: string;
-  author_name?: string[];
-  cover_i?: number;
-  number_of_pages_median?: number;
+type GBVolume = {
+  id: string;
+  volumeInfo: {
+    title: string;
+    authors?: string[];
+    pageCount?: number;
+    imageLinks?: { thumbnail?: string; smallThumbnail?: string };
+  };
 };
 
 type SelectedBook = {
   title: string;
   author: string;
   coverUrl: string;
-  openLibraryId: string;
+  volumeId: string;
   totalPages: number | null;
 };
 
@@ -26,6 +28,11 @@ type User = { id: string; name: string | null; email: string | null };
 
 function displayName(u: User) {
   return u.name || (u.email ?? "").split("@")[0];
+}
+
+function getCoverUrl(vol: GBVolume): string {
+  const raw = vol.volumeInfo.imageLinks?.thumbnail ?? vol.volumeInfo.imageLinks?.smallThumbnail ?? "";
+  return raw.replace("http://", "https://").replace("&edge=curl", "");
 }
 
 export default function AddBookForm({
@@ -40,7 +47,7 @@ export default function AddBookForm({
   nominationId?: string | null;
 }) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<OLDoc[]>([]);
+  const [results, setResults] = useState<GBVolume[]>([]);
   const [searching, setSearching] = useState(false);
   const [selected, setSelected] = useState<SelectedBook | null>(preSelected);
   const [isPending, startTransition] = useTransition();
@@ -50,24 +57,22 @@ export default function AddBookForm({
     setSearching(true);
     try {
       const res = await fetch(
-        `https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=6&fields=key,title,author_name,cover_i,number_of_pages_median`
+        `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=6&printType=books`
       );
       const data = await res.json();
-      setResults(data.docs ?? []);
+      setResults(data.items ?? []);
     } finally {
       setSearching(false);
     }
   }
 
-  function selectBook(doc: OLDoc) {
+  function selectBook(vol: GBVolume) {
     setSelected({
-      title: doc.title,
-      author: doc.author_name?.[0] ?? "",
-      coverUrl: doc.cover_i
-        ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`
-        : "",
-      openLibraryId: doc.key,
-      totalPages: doc.number_of_pages_median ?? null,
+      title: vol.volumeInfo.title,
+      author: vol.volumeInfo.authors?.[0] ?? "",
+      coverUrl: getCoverUrl(vol),
+      volumeId: vol.id,
+      totalPages: vol.volumeInfo.pageCount ?? null,
     });
     setResults([]);
     setQuery("");
@@ -78,7 +83,8 @@ export default function AddBookForm({
       formData.set("title", selected.title);
       formData.set("author", selected.author);
       formData.set("coverUrl", selected.coverUrl);
-      formData.set("openLibraryId", selected.openLibraryId);
+      formData.set("openLibraryId", selected.volumeId);
+      if (selected.totalPages) formData.set("totalPages", String(selected.totalPages));
     }
     if (nominationId) formData.set("nominationId", nominationId);
     startTransition(() => addBook(formData));
@@ -154,33 +160,38 @@ export default function AddBookForm({
 
               {results.length > 0 && (
                 <div className="rounded-2xl border border-lace bg-cream overflow-hidden">
-                  {results.map((doc) => (
-                    <button
-                      key={doc.key}
-                      type="button"
-                      onClick={() => selectBook(doc)}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-lace/60 transition-colors border-b border-lace last:border-0 cursor-pointer"
-                    >
-                      {doc.cover_i ? (
-                        <CoverImage
-                          src={`https://covers.openlibrary.org/b/id/${doc.cover_i}-S.jpg`}
-                          alt=""
-                          className="w-8 h-11 rounded shrink-0"
-                          iconSize={14}
-                        />
-                      ) : (
-                        <div className="w-8 h-11 rounded bg-lace flex items-center justify-center shrink-0">
-                          <BookOpen size={14} className="text-bark-muted" strokeWidth={1.5} />
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-bark line-clamp-1">{doc.title}</p>
-                        {doc.author_name?.[0] && (
-                          <p className="text-xs text-bark-muted">{doc.author_name[0]}</p>
+                  {results.map((vol) => {
+                    const thumbUrl = vol.volumeInfo.imageLinks?.smallThumbnail
+                      ?.replace("http://", "https://")
+                      .replace("&edge=curl", "");
+                    return (
+                      <button
+                        key={vol.id}
+                        type="button"
+                        onClick={() => selectBook(vol)}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-lace/60 transition-colors border-b border-lace last:border-0 cursor-pointer"
+                      >
+                        {thumbUrl ? (
+                          <CoverImage
+                            src={thumbUrl}
+                            alt=""
+                            className="w-8 h-11 rounded shrink-0"
+                            iconSize={14}
+                          />
+                        ) : (
+                          <div className="w-8 h-11 rounded bg-lace flex items-center justify-center shrink-0">
+                            <BookOpen size={14} className="text-bark-muted" strokeWidth={1.5} />
+                          </div>
                         )}
-                      </div>
-                    </button>
-                  ))}
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-bark line-clamp-1">{vol.volumeInfo.title}</p>
+                          {vol.volumeInfo.authors?.[0] && (
+                            <p className="text-xs text-bark-muted">{vol.volumeInfo.authors[0]}</p>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -207,7 +218,7 @@ export default function AddBookForm({
                 Total pages
                 {selected?.totalPages && (
                   <span className="ml-1.5 text-xs font-normal text-bark-muted">
-                    from Open Library
+                    from Google Books
                   </span>
                 )}
               </label>
@@ -215,7 +226,7 @@ export default function AddBookForm({
                 name="totalPages"
                 type="number"
                 min={1}
-                key={selected?.openLibraryId}
+                key={selected?.volumeId}
                 defaultValue={selected?.totalPages ?? ""}
                 placeholder="e.g. 400"
                 className="w-full rounded-2xl border border-lace bg-cream px-4 py-2.5 text-sm text-bark placeholder:text-bark-muted/60 focus:border-blush focus:outline-none focus:ring-2 focus:ring-blush/20 transition-colors"
@@ -242,11 +253,11 @@ export default function AddBookForm({
 
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-bark">
-                  Date <span className="text-blush">*</span>
+                  Date &amp; time <span className="text-blush">*</span>
                 </label>
                 <input
                   name="meetingDate"
-                  type="date"
+                  type="datetime-local"
                   required
                   className="w-full rounded-2xl border border-lace bg-cream px-4 py-2.5 text-sm text-bark focus:border-blush focus:outline-none focus:ring-2 focus:ring-blush/20 transition-colors"
                 />

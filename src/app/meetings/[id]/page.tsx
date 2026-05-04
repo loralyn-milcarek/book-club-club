@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { ChevronLeft, MapPin, BookOpen, StickyNote } from "lucide-react";
+import CoverImage from "@/components/CoverImage";
 import IconRatingForm from "./IconRatingForm";
 import EditableSection from "./EditableSection";
 import PhotoGallery from "@/components/PhotoGallery";
@@ -58,6 +59,11 @@ export default async function MeetingDetailPage({
     year: "numeric",
   });
 
+  const hasTime = meeting.date.getHours() !== 0 || meeting.date.getMinutes() !== 0;
+  const timeLabel = hasTime
+    ? meeting.date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
+    : null;
+
   function displayName(user: { name: string | null; email: string | null }) {
     return user.name || (user.email ?? "").split("@")[0];
   }
@@ -77,6 +83,9 @@ export default async function MeetingDetailPage({
           </Link>
           <div>
             <h1 className="font-display text-2xl font-bold text-bark">{dateLabel}</h1>
+            {timeLabel && (
+              <p className="text-sm text-bark-muted">{timeLabel}</p>
+            )}
             {meeting.location && (
               <div className="flex items-center gap-1 text-sm text-bark-muted">
                 <MapPin size={12} strokeWidth={1.75} />
@@ -102,6 +111,12 @@ export default async function MeetingDetailPage({
                 const reactivateAction = setBookActive.bind(null, book.id);
                 return (
                   <div key={book.id} className="flex items-center gap-3">
+                    <CoverImage
+                      src={book.coverUrl ?? ""}
+                      alt={book.title}
+                      className="w-10 h-14 rounded-lg shrink-0"
+                      iconSize={16}
+                    />
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-semibold ${book.isActive ? "text-bark" : "text-bark-muted line-through"}`}>
                         {book.title}
@@ -185,7 +200,7 @@ export default async function MeetingDetailPage({
         >
           <EditableSection
             meetingId={meeting.id}
-            date={meeting.date.toISOString().split("T")[0]}
+            date={meeting.date.toISOString().slice(0, 16)}
             location={meeting.location ?? ""}
             activity={meeting.activity ?? ""}
             notes={meeting.notes ?? ""}

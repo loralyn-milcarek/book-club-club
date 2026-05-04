@@ -21,12 +21,12 @@ export default function EditMeetingForm({
     <form action={action} className="space-y-4">
       <div className="space-y-1.5">
         <label htmlFor="edit-date" className="text-sm font-semibold text-bark">
-          Date <span className="text-blush">*</span>
+          Date &amp; time <span className="text-blush">*</span>
         </label>
         <input
           id="edit-date"
           name="date"
-          type="date"
+          type="datetime-local"
           required
           defaultValue={date}
           className="w-full rounded-xl border border-lace bg-cream px-4 py-2.5 text-bark text-sm focus:outline-none focus:border-blush transition-colors"

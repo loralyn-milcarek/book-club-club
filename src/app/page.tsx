@@ -134,8 +134,13 @@ export default async function Home() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-bark">
-                Next meeting ·{" "}
-                {nextMeeting.date.toLocaleDateString("en-US", { weekday: "long" })}
+                {(() => {
+                  const hasTime = nextMeeting.date.getHours() !== 0 || nextMeeting.date.getMinutes() !== 0;
+                  const timeStr = hasTime
+                    ? nextMeeting.date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
+                    : null;
+                  return <>Next meeting · {nextMeeting.date.toLocaleDateString("en-US", { weekday: "long" })}{timeStr && ` · ${timeStr}`}</>;
+                })()}
               </p>
               {nextMeeting.books.length > 0 && (
                 <div className="flex items-center gap-1 text-xs text-bark-muted">

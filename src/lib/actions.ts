@@ -7,6 +7,13 @@ import { prisma } from "@/lib/db";
 import type { Format } from "@prisma/client";
 import { put, del } from "@vercel/blob";
 
+function parseMeetingDate(str: string): Date {
+  const [datePart, timePart = "00:00"] = str.split("T");
+  const [y, m, d] = datePart.split("-").map(Number);
+  const [h, min] = timePart.split(":").map(Number);
+  return new Date(y, m - 1, d, h, min);
+}
+
 async function requireUser() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -71,9 +78,8 @@ export async function addBook(formData: FormData) {
   const meetingActivity = (formData.get("meetingActivity") as string) || null;
   const meetingNotes = (formData.get("meetingNotes") as string) || null;
 
-  const [y, m, d] = meetingDate.split("-").map(Number);
   const meeting = await prisma.meeting.create({
-    data: { date: new Date(y, m - 1, d), location: meetingLocation, activity: meetingActivity, notes: meetingNotes },
+    data: { date: parseMeetingDate(meetingDate), location: meetingLocation, activity: meetingActivity, notes: meetingNotes },
   });
   const meetingId = meeting.id;
 
@@ -108,9 +114,8 @@ export async function createMeeting(formData: FormData) {
   const activity = (formData.get("activity") as string) || null;
   const notes = (formData.get("notes") as string) || null;
 
-  const [y, m, d] = dateStr.split("-").map(Number);
   const meeting = await prisma.meeting.create({
-    data: { date: new Date(y, m - 1, d), location, activity, notes },
+    data: { date: parseMeetingDate(dateStr), location, activity, notes },
   });
 
   revalidatePath("/");
@@ -126,10 +131,9 @@ export async function updateMeeting(meetingId: string, formData: FormData) {
   const activity = (formData.get("activity") as string) || null;
   const notes = (formData.get("notes") as string) || null;
 
-  const [y, m, d] = dateStr.split("-").map(Number);
   await prisma.meeting.update({
     where: { id: meetingId },
-    data: { date: new Date(y, m - 1, d), location, activity, notes },
+    data: { date: parseMeetingDate(dateStr), location, activity, notes },
   });
 
   revalidatePath("/");

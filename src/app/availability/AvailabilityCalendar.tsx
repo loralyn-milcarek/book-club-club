@@ -122,9 +122,6 @@ export default function AvailabilityCalendar({
               title={meetingTitle ? `${meetingTitle}${isMyBlock ? " · you're unavailable" : ""}` : isMyBlock ? "Click to mark as available" : otherBlockers.length > 0 ? `${otherBlockers.map((b) => b.name).join(", ")} unavailable` : "Click to mark as unavailable"}
             >
               {day}
-              {meetingTitle && (
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-sage" />
-              )}
               {isMyBlock && (
                 <svg
                   className="absolute inset-0 w-full h-full pointer-events-none"
@@ -134,8 +131,14 @@ export default function AvailabilityCalendar({
                   <line x1="20" y1="80" x2="80" y2="20" stroke="rgba(255,255,255,0.6)" strokeWidth="5" strokeLinecap="round" />
                 </svg>
               )}
-              {otherBlockers.length > 0 && (
-                <span className="absolute bottom-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-sage" />
+              {otherBlockers.length > 0 && !isMyBlock && (
+                <svg
+                  className="absolute inset-0 w-full h-full pointer-events-none"
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                >
+                  <line x1="20" y1="80" x2="80" y2="20" stroke="rgba(122,158,126,0.7)" strokeWidth="5" strokeLinecap="round" />
+                </svg>
               )}
             </button>
           );
@@ -152,7 +155,11 @@ export default function AvailabilityCalendar({
           You&apos;re unavailable
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-sage shrink-0" />
+          <div className="relative w-3 h-3 rounded-sm bg-lace overflow-hidden shrink-0">
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <line x1="20" y1="80" x2="80" y2="20" stroke="rgba(122,158,126,0.7)" strokeWidth="14" strokeLinecap="round" />
+            </svg>
+          </div>
           Others unavailable
         </div>
         <div className="flex items-center gap-1.5">
