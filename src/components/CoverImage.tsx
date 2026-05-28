@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { BookOpen } from "lucide-react";
 
 type Props = {
@@ -13,12 +13,20 @@ type Props = {
 export default function CoverImage({ src, alt, className = "", iconSize = 24 }: Props) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+      setLoaded(true);
+    }
+  }, []);
 
   return (
     <div className={`relative overflow-hidden bg-lace flex items-center justify-center ${className}`}>
       <BookOpen size={iconSize} className="text-bark-muted" strokeWidth={1.5} />
       {!failed && (
         <img
+          ref={imgRef}
           src={src}
           alt={alt}
           onLoad={() => setLoaded(true)}

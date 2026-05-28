@@ -44,9 +44,7 @@ export default function NominateBookForm() {
     if (!query.trim()) return;
     setSearching(true);
     try {
-      const res = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=6&printType=books`
-      );
+      const res = await fetch(`/api/books/search?q=${encodeURIComponent(query)}`);
       const data = await res.json();
       setResults(data.items ?? []);
     } finally {
