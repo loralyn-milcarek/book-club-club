@@ -49,16 +49,23 @@ export default function AddBookForm({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GBVolume[]>([]);
   const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [selected, setSelected] = useState<SelectedBook | null>(preSelected);
   const [isPending, startTransition] = useTransition();
 
   async function search() {
     if (!query.trim()) return;
     setSearching(true);
+    setSearchError(null);
     try {
       const res = await fetch(`/api/books/search?q=${encodeURIComponent(query)}`);
       const data = await res.json();
-      setResults(data.items ?? []);
+      if (!res.ok) {
+        setSearchError(data.error === "rate_limited" ? "Search is temporarily unavailable — try again in a moment." : "Search failed. Try again.");
+        setResults([]);
+      } else {
+        setResults(data.items ?? []);
+      }
     } finally {
       setSearching(false);
     }
@@ -155,6 +162,10 @@ export default function AddBookForm({
                   {searching ? <Loader2 size={14} className="animate-spin" /> : "Search"}
                 </button>
               </div>
+
+              {searchError && (
+                <p className="text-xs text-blush px-1">{searchError}</p>
+              )}
 
               {results.length > 0 && (
                 <div className="rounded-2xl border border-lace bg-cream overflow-hidden">

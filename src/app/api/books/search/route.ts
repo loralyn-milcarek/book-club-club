@@ -13,6 +13,9 @@ export async function GET(req: NextRequest) {
   }
 
   const res = await fetch(url.toString());
+  if (!res.ok) {
+    return NextResponse.json({ error: res.status === 429 ? "rate_limited" : "search_failed" }, { status: res.status });
+  }
   const data = await res.json();
   return NextResponse.json(data);
 }
